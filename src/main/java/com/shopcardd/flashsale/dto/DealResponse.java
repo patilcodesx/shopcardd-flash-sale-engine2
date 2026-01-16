@@ -22,6 +22,11 @@ public class DealResponse {
     @JsonProperty("total_vouchers")
     private int totalVouchers;
 
+
+    @JsonProperty("distance_km")
+    private double distanceKm;
+
+
     @JsonProperty("inventory_remaining")
     private int inventoryRemaining;
 

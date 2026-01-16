@@ -1,185 +1,158 @@
-📄 ARCHITECTURE.md (FINAL CONTENT)
-1. System Overview
+# Architecture & Design – Hyperlocal Flash Sale Engine
 
-This service is a hyperlocal flash-sale backend engine designed to allow merchants to create time-bound deals and users to discover and claim vouchers safely under high concurrency.
+## 1. System Overview
+
+This service is a hyperlocal flash-sale backend engine designed to allow merchants to create time-bound deals and enable users to discover and claim vouchers safely under high concurrency.
 
 The system exposes REST APIs for:
-
-Deal creation
-
-Deal discovery based on location
-
-Secure voucher claiming
+- Deal creation
+- Location-based deal discovery
+- Secure voucher claiming
 
 The design prioritizes:
+- Data consistency
+- Concurrency safety
+- Horizontal scalability
+- Low-latency responses
 
-Data consistency
+---
 
-Concurrency safety
+## 2. High-Level Architecture
 
-Horizontal scalability
+### Core Components
+- **Spring Boot REST API** – Core business logic and API layer
+- **PostgreSQL** – Persistent storage for deals and claims
+- **Redis** – Distributed locking (and optional caching)
+- **Docker** – Containerized deployment
+- **Load Balancer** – Horizontal scaling in production environments
 
-Low-latency responses
+### Request Flow
 
-2. High-Level Architecture
-
-Components:
-
-Spring Boot REST API – core business logic
-
-PostgreSQL – persistent storage (used in production)
-
-Redis – distributed locking + caching
-
-Docker – containerized deployment
-
-Load Balancer – horizontal scaling (cloud deployment)
-
-Client → Load Balancer → Spring Boot App
+Client → Load Balancer → Spring Boot Application
 ↓
-Redis (Lock / Cache)
+Redis (Distributed Lock)
 ↓
 PostgreSQL
 
-3. Deal Discovery Design
 
-Deal discovery follows these steps:
+---
 
-Fetch active deals (not expired, inventory > 0)
+## 3. Deal Discovery Design
 
-Apply geo-distance filtering using the Haversine formula
+### Discovery Flow
+1. Fetch active deals (not expired and inventory > 0)
+2. Apply geo-distance filtering using the Haversine formula
+3. Return only deals within the requested radius
 
-Return only deals within the requested radius
+### Performance Optimization (Proposed)
+To reduce database load during high read traffic, discovery results can be cached in Redis with a short TTL (e.g., 30 seconds).
 
-Optimization (Production):
-
-Discovery results are cached in Redis with short TTL (30 seconds)
-
-Key format:
-
+**Cache Key Format**
 deals:{lat}:{lng}:{radius}
 
 
-This reduces database load during high traffic.
+> Note: This caching strategy is a proposed optimization and not mandatory for correctness.
 
-4. Voucher Claim Concurrency Handling (MOST IMPORTANT)
+---
 
-Claiming a deal is a critical section due to:
+## 4. Voucher Claim Concurrency Handling (Core Challenge)
 
-Limited inventory
+### Problem
+Flash sales involve limited inventory and a large number of users attempting to claim deals simultaneously.  
+Without proper synchronization, this can result in:
+- Overselling inventory
+- Duplicate claims by the same user
 
-Multiple users claiming simultaneously
+### Solution: Redis Distributed Lock
 
-Problem
+A Redis-based distributed lock is used to protect the critical claim section.
 
-Without protection, concurrent requests can:
-
-Oversell inventory
-
-Allow duplicate claims
-
-Solution: Redis Distributed Lock
-
-Lock Key:
-
-deal:{dealId}:lock
+**Lock Key Format**
+lock:deal:{dealId}
 
 
-Claim Flow:
+### Claim Flow
+1. Acquire Redis lock using `SET NX EX`
+2. Validate deal existence and expiration
+3. Check remaining inventory
+4. Ensure the user has not already claimed the deal
+5. Decrement inventory
+6. Persist the claim
+7. Release the lock safely
 
-Acquire Redis lock
+### Guarantees
+- Inventory never goes below zero
+- Strictly one voucher per user
+- Safe behavior under high concurrency
 
-Check if deal exists and is valid
+---
 
-Check if inventory > 0
+## 5. Scenario 1: Offline “Jugaad” Voucher Verification
 
-Ensure user has not already claimed
+### Problem
+Merchants may need to verify voucher authenticity when their device has no internet connectivity.
 
-Decrement inventory
+### Solution
+- Upon successful claim, the system generates a signed voucher token (JWT or HMAC-based)
+- The token is embedded in a QR code
+- The token contains:
+  - dealId
+  - userId
+  - expiry timestamp
+  - cryptographic signature
 
-Persist claim
+### Offline Verification
+- Merchant application stores the public key (or shared secret)
+- Voucher signature is verified locally without contacting the backend
+- Verification logs are synced to the server once connectivity is restored
 
-Release lock
+### Benefits
+- Offline-first verification
+- Tamper-proof vouchers
+- No backend dependency during redemption
 
-This guarantees:
+---
 
-Inventory never goes below zero
+## 6. Scenario 2: Scaling to 1 Million Requests per Minute
 
-One voucher per user
+### Stateless Application
+- Spring Boot services remain stateless
+- Enables horizontal scaling
 
-Safe behavior under heavy concurrency
+### Load Balancing
+- API placed behind a load balancer (ALB / NGINX)
+- Requests distributed across multiple application instances
 
-5. Offline Voucher Verification (Scenario 1)
-   Problem
+### Redis-First Strategy
+- Redis handles distributed locking
+- Minimizes database contention during flash sales
 
-Merchants may need to verify vouchers without internet connectivity.
+### Database Scaling
+- Primary database for writes
+- Read replicas for discovery queries
+- Indexes on `deal_id` and `valid_until`
+- Optional sharding by `deal_id` at extreme scale
 
-Solution
+### Asynchronous Processing
+- Non-critical tasks (analytics, notifications) handled via message queues (Kafka / RabbitMQ)
 
-Each claimed voucher generates a signed JWT / QR code
+### Result
+- Horizontal scalability
+- High throughput
+- Inventory correctness preserved
 
-QR contains:
+---
 
-voucherId
+## 7. Failure Handling
 
-userId
+- If Redis is unavailable → claim requests are rejected (fail-safe)
+- If database transaction fails → changes are rolled back
+- Clear error responses returned to clients
 
-dealId
+---
 
-expiry
+## 8. Trade-offs & Assumptions
 
-Merchant app verifies the signature offline
-
-When connectivity is restored, verification logs are synced to the server
-
-This ensures:
-
-Offline-first verification
-
-Tamper-proof vouchers
-
-6. Scaling to 1 Million Requests per Minute (Scenario 2)
-
-To handle massive scale:
-
-Stateless Application
-
-Multiple Spring Boot instances behind load balancer
-
-Redis First Strategy
-
-Locks + caching handled in Redis
-
-DB accessed only when necessary
-
-Database Optimization
-
-Index on deal_id, valid_until
-
-Read replicas
-
-Sharding by deal_id if required
-
-Async Processing
-
-Claim confirmations/events pushed to message queue (Kafka/RabbitMQ)
-
-Auto Scaling
-
-CPU & request-based scaling in cloud environment
-
-7. Failure Handling
-
-If Redis is unavailable → reject claims (fail-safe)
-
-If DB transaction fails → rollback
-
-Clear error responses returned to client
-
-8. Trade-offs & Assumptions
-
-Authentication is intentionally omitted as per assignment scope
-
-Redis is assumed to be highly available
-
-Inventory correctness is prioritized over throughput
+- Authentication is intentionally omitted as per assignment scope
+- Redis is assumed to be highly available
+- Inventory correctness is prioritized over raw throughput

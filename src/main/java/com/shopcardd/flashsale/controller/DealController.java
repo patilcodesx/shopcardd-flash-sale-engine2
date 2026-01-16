@@ -30,28 +30,41 @@ public class DealController {
 
 
     @GetMapping("/discover")
-    public List<DealResponse> discoverDeals(
-            @RequestParam double lat,
-            @RequestParam double lng,
-            @RequestParam double radius
-    ) {
-        return dealService.discoverDeals(lat, lng, radius)
-                .stream()
-                .map(dealService::toResponse)
-                .toList();
+public Map<String, List<DealResponse>> discoverDeals(
+        @RequestParam double lat,
+        @RequestParam double lng,
+        @RequestParam double radius
+) {
+    List<DealResponse> deals = dealService.discoverDeals(lat, lng, radius);
+
+    return Map.of("deals", deals);
+}
+
+
+ @PostMapping("/{dealId}/claim")
+public Map<String, String> claimDeal(
+        @PathVariable String dealId,
+        @RequestParam(required = false) String userId,
+        @RequestBody(required = false) ClaimRequest request
+) {
+    String finalUserId;
+
+    if (userId != null && !userId.isBlank()) {
+        finalUserId = userId;
+    } else if (request != null && request.getUserId() != null) {
+        finalUserId = request.getUserId();
+    } else {
+        throw new IllegalArgumentException("userId is required");
     }
 
-    @PostMapping("/{dealId}/claim")
-    public Map<String, String> claimDeal(
-            @PathVariable String dealId,
-            @Valid @RequestBody ClaimRequest request
-    ) {
-        dealService.claimDeal(dealId, request.getUserId());
-        return Map.of(
-                "status", "SUCCESS",
-                "message", "Voucher claimed"
-        );
-    }
+    dealService.claimDeal(dealId, finalUserId);
+
+   return Map.of(
+        "status", "Success",
+        "voucher_code", "SHOP-" + dealId.substring(0, 6)
+    );
+}
+
 
 
 
