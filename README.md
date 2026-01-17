@@ -44,6 +44,53 @@ PostgreSQL
 
 ---
 
+## 📁 Project Folder Structure
+
+shopcardd-flash-sale-engine
+│
+├── docker-compose.yml
+├── Dockerfile
+├── README.md
+│
+├── src
+│   └── main
+│       ├── java
+│       │   └── com
+│       │       └── shopcardd
+│       │           └── flashsale
+│       │               ├── controller
+│       │               │   └── DealController.java
+│       │               │
+│       │               ├── service
+│       │               │   ├── DealService.java
+│       │               │   ├── ClaimService.java
+│       │               │
+│       │               ├── repository
+│       │               │   ├── DealRepository.java
+│       │               │   ├── ClaimRepository.java
+│       │               │
+│       │               ├── entity
+│       │               │   ├── Deal.java
+│       │               │   ├── Claim.java
+│       │               │
+│       │               ├── dto
+│       │               │   ├── DealRequest.java
+│       │               │   ├── DealResponse.java
+│       │               │
+│       │               ├── config
+│       │               │   ├── RedisConfig.java
+│       │               │   └── CacheConfig.java
+│       │               │
+│       │               └── FlashSaleApplication.java
+│       │
+│       └── resources
+│           ├── application.yml
+│           └── schema.sql
+│
+└── pom.xml
+
+
+
 ## ▶️ How to Run the Application
 
 ### Prerequisites
@@ -136,6 +183,7 @@ cache:deals:{lat}:{lng}:{radius}
 ### Create Deal
 
 POST /deals
+
 ```json
 {
   "merchant_id": "merchant-123",
