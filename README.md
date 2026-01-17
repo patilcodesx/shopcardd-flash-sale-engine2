@@ -1,88 +1,154 @@
-# ShopCardd – Hyperlocal Flash Sale Engine
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ShopCardd – Hyperlocal Flash Sale Engine</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            line-height: 1.6;
+            margin: 40px;
+            color: #222;
+        }
+        h1, h2, h3 {
+            color: #0b5ed7;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 3px 6px;
+            border-radius: 4px;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 15px;
+            overflow-x: auto;
+            border-radius: 6px;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 15px 0;
+            width: 100%;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        th {
+            background: #f0f0f0;
+        }
+        .box {
+            background: #f9fafb;
+            padding: 15px;
+            border-left: 5px solid #0b5ed7;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
 
-This project is a backend service built as part of the **ShopCardd Backend Engineering Assignment**.
+<h1>🛒 ShopCardd – Hyperlocal Flash Sale Engine</h1>
 
-It enables merchants to create time-bound flash deals and allows users to discover and safely claim vouchers under **high-concurrency conditions**, ensuring that inventory is never oversold.
+<p><strong>Author:</strong> Bhavesh Patil<br>
+<strong>GitHub:</strong> <a href="https://github.com/patilcodesx">https://github.com/patilcodesx</a></p>
 
----
+<hr>
 
-## 🚀 Tech Stack
+<h2>📖 Project Overview</h2>
 
-- Java 17
-- Spring Boot
-- PostgreSQL
-- Redis
-- Docker & Docker Compose
+<p>
+ShopCardd Flash Sale Engine is a backend system designed to support
+<strong>high-concurrency flash deal campaigns</strong>.
+</p>
 
----
+<p>
+The system enables merchants to create limited-inventory deals while allowing
+thousands of users to discover and claim vouchers safely at the same time —
+without overselling or duplicate claims.
+</p>
 
-## 📌 System Capabilities
+<ul>
+    <li>Strict inventory correctness</li>
+    <li>Concurrency control</li>
+    <li>Distributed system safety</li>
+    <li>Horizontal scalability</li>
+</ul>
 
-- Create flash deals with limited inventory
-- Discover nearby deals using geo-location
-- Claim vouchers safely under heavy concurrency
-- Prevent overselling and duplicate claims
+<hr>
 
-### Design Priorities
+<h2>🎯 Core Problem Solved</h2>
 
-- Data consistency
-- Concurrency safety
-- Horizontal scalability
-- Low-latency responses
+<p>Flash sales suffer from race conditions when many users claim simultaneously.</p>
 
----
+<ul>
+    <li>Inventory must never go below zero</li>
+    <li>One voucher per user</li>
+    <li>No duplicate claims</li>
+</ul>
 
-## 🧩 Architecture Overview
+<div class="box">
+<strong>Result:</strong> Safe voucher claiming even under extreme concurrency.
+</div>
 
+<hr>
+
+<h2>🛠️ Tech Stack</h2>
+
+<table>
+<tr><th>Layer</th><th>Technology</th></tr>
+<tr><td>Language</td><td>Java 17</td></tr>
+<tr><td>Framework</td><td>Spring Boot</td></tr>
+<tr><td>Database</td><td>PostgreSQL</td></tr>
+<tr><td>Cache / Lock</td><td>Redis</td></tr>
+<tr><td>Containerization</td><td>Docker</td></tr>
+<tr><td>Orchestration</td><td>Docker Compose</td></tr>
+</table>
+
+<hr>
+
+<h2>🧩 High-Level Architecture</h2>
+
+<pre>
 Client
-↓
+   ↓
 Load Balancer
-↓
-Spring Boot Application
-↓
+   ↓
+Spring Boot REST API
+   ↓
 Redis (Distributed Lock + Cache)
-↓
+   ↓
 PostgreSQL
+</pre>
 
+<hr>
 
+<h2>▶️ How to Run</h2>
 
-### Components
+<h3>Prerequisites</h3>
+<ul>
+    <li>Docker</li>
+    <li>Docker Compose</li>
+</ul>
 
-- **Spring Boot REST API** – business logic
-- **PostgreSQL** – persistent data storage
-- **Redis**
-  - Distributed locking for flash claims
-  - Caching for deal discovery
-- **Docker** – containerized deployment
+<h3>Start Application</h3>
 
----
+<pre><code>docker compose up --build</code></pre>
 
-## ▶️ How to Run the Application
+<h3>Services</h3>
 
-### Prerequisites
+<table>
+<tr><th>Service</th><th>URL / Port</th></tr>
+<tr><td>API</td><td>http://localhost:8080</td></tr>
+<tr><td>PostgreSQL</td><td>5432</td></tr>
+<tr><td>Redis</td><td>6379</td></tr>
+</table>
 
-- Docker
-- Docker Compose
+<hr>
 
----
+<h2>🛠 API Endpoints</h2>
 
-### Start the Application
+<h3>1️⃣ Create Deal</h3>
 
-```bash
-docker compose up --build
-Services
-Service	URL / Port
-API	http://localhost:8080
-PostgreSQL	5432
-Redis	6379
-
-🛠 API Endpoints
-1️⃣ Create Deal
-POST /deals
-
-json
-Copy code
-{
+<pre><code>{
   "merchant_id": "merchant-123",
   "title": "Flat 50% Off",
   "total_vouchers": 100,
@@ -91,163 +157,101 @@ Copy code
     "lat": 19.0760,
     "long": 72.8777
   }
-}
-2️⃣ Discover Deals
-GET
+}</code></pre>
 
-bash
-Copy code
-/deals/discover?lat=19.0760&lng=72.8777&radius=5
-Behavior
-Returns only active deals
+<h3>2️⃣ Discover Deals</h3>
 
-Geo-filtered using Haversine formula
+<pre><code>/deals/discover?lat=19.0760&lng=72.8777&radius=5</code></pre>
 
-Filters by radius in kilometers
+<ul>
+    <li>Active deals only</li>
+    <li>Haversine geo-distance filtering</li>
+    <li>Redis caching (TTL 30 seconds)</li>
+</ul>
 
-Uses Redis caching
+<pre><code>cache:deals:{lat}:{lng}:{radius}</code></pre>
 
-Redis Cache
-TTL: 30 seconds
+<hr>
 
-Key format:
+<h3>3️⃣ Claim Deal</h3>
 
+<pre><code>/deals/{dealId}/claim?userId=u-1</code></pre>
 
-cache:deals:{lat}:{lng}:{radius}
-3️⃣ Claim Deal (Concurrency-Safe)
-POST
+<ul>
+    <li>Success</li>
+    <li>Already claimed</li>
+    <li>Sold out</li>
+    <li>Expired</li>
+</ul>
 
-bash
-Copy code
-/deals/{dealId}/claim?userId=u-1
-Possible Outcomes
-Scenario	Result
-Successful claim	Voucher issued
-Duplicate claim	Rejected
-Sold out	Rejected
-Deal expired	Rejected
+<hr>
 
-🔐 Concurrency Handling (Core Challenge)
-To prevent race conditions when multiple users claim simultaneously, a Redis distributed lock is used.
+<h2>🔐 Concurrency Handling</h2>
 
-Lock Key
-csharp
-Copy code
-lock:deal:{dealId}
-Claim Flow
-Acquire Redis lock
+<p>Redis distributed locking protects critical inventory operations.</p>
 
-pgsql
-Copy code
-SET lock:deal:{dealId} NX EX 10
-Validate deal existence
+<pre><code>lock:deal:{dealId}</code></pre>
 
-Check expiration time
+<ol>
+    <li>Acquire Redis lock</li>
+    <li>Validate deal</li>
+    <li>Check inventory</li>
+    <li>Persist claim</li>
+    <li>Release lock</li>
+</ol>
 
-Check remaining inventory
+<hr>
 
-Ensure user has not already claimed
+<h2>🧠 Offline Voucher Verification</h2>
 
-Decrement inventory
+<ul>
+    <li>Signed voucher token (JWT / HMAC)</li>
+    <li>Embedded inside QR code</li>
+    <li>Offline signature verification</li>
+    <li>Logs synced when online</li>
+</ul>
 
-Persist claim
+<hr>
 
-Release lock safely
+<h2>🚀 Scaling to 1 Million Requests / Minute</h2>
 
-Guarantees
-✅ Inventory never goes below zero
-✅ One voucher per user
-✅ Safe under high concurrency
-✅ No race conditions
+<ul>
+    <li>Stateless Spring Boot services</li>
+    <li>Horizontal scaling</li>
+    <li>Redis-first locking strategy</li>
+    <li>PostgreSQL read replicas</li>
+</ul>
 
-🧠 Scenario 1: Offline Voucher Verification (Offline Jugaad)
-Problem
-Merchant device has no internet connectivity.
+<hr>
 
-Solution
-Voucher token generated during claim
+<h2>⚠️ Failure Handling</h2>
 
-Token is embedded into a QR code
+<table>
+<tr><th>Failure</th><th>Behavior</th></tr>
+<tr><td>Redis down</td><td>Claims rejected (fail-safe)</td></tr>
+<tr><td>DB error</td><td>Transaction rollback</td></tr>
+<tr><td>Duplicate claim</td><td>Graceful rejection</td></tr>
+</table>
 
-Token signed using JWT / HMAC
+<hr>
 
-Token Contains
-dealId
+<h2>✅ Summary</h2>
 
-userId
+<ul>
+    <li>High-concurrency safe backend</li>
+    <li>Redis distributed locking</li>
+    <li>Geo-based deal discovery</li>
+    <li>Production-ready architecture</li>
+</ul>
 
-expiry timestamp
+<hr>
 
-cryptographic signature
+<h2>👨‍💻 Author</h2>
 
-Offline Verification
-Merchant validates signature locally
+<p>
+<strong>Bhavesh Patil</strong><br>
+GitHub: <a href="https://github.com/patilcodesx">https://github.com/patilcodesx</a>
+</p>
 
-No backend call required
-
-Logs synced once internet is restored
-
-Benefits
-Offline-first
-
-Tamper-proof
-
-Secure verification
-
-No server dependency
-
-🚀 Scenario 2: Scaling to 1 Million Requests per Minute
-Architecture Strategy
-Stateless Spring Boot services
-
-Horizontal scaling behind load balancer
-
-Redis used as first-level system
-
-PostgreSQL optimized for writes
-
-Database Strategy
-Primary database for writes
-
-Read replicas for discovery traffic
-
-Indexed queries
-
-Connection pooling
-
-Performance Enhancements
-Redis caching
-
-Distributed locking
-
-Async processing for non-critical operations
-
-Result
-High throughput
-
-Stable performance
-
-Inventory integrity preserved
-
-⚠️ Failure Handling
-Failure	Behavior
-Redis unavailable	Claims rejected (fail-safe)
-Database error	Transaction rollback
-Invalid input	Proper HTTP error
-Duplicate claim	Rejected gracefully
-
-✅ Summary
-Fully containerized backend
-
-Safe flash-sale concurrency handling
-
-Redis-based distributed locking
-
-Geo-based deal discovery
-
-Horizontally scalable architecture
-
-Production-ready design
-
-Author: Bhavesh Patil
-GitHub: https://github.com/patilcodesx
+</body>
+</html>
