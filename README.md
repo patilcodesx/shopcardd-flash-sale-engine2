@@ -44,8 +44,7 @@ Redis (Distributed Lock + Cache)
 ↓
 PostgreSQL
 
-yaml
-Copy code
+
 
 ### Components
 
@@ -113,8 +112,7 @@ TTL: 30 seconds
 
 Key format:
 
-css
-Copy code
+
 cache:deals:{lat}:{lng}:{radius}
 3️⃣ Claim Deal (Concurrency-Safe)
 POST
