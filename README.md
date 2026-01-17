@@ -1,196 +1,108 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>ShopCardd – Hyperlocal Flash Sale Engine</title>
+🛒 ShopCardd – Hyperlocal Flash Sale Engine
 
-    <style>
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            margin: 40px;
-            line-height: 1.6;
-            color: #1f2937;
-        }
+Backend service for managing high-concurrency flash sales, enabling merchants to create limited-inventory deals and users to safely discover and claim vouchers without overselling.
 
-        h1, h2, h3 {
-            color: #1d4ed8;
-        }
+🚀 Tech Stack
 
-        hr {
-            margin: 30px 0;
-        }
+Java 17
 
-        pre {
-            background: #f3f4f6;
-            padding: 15px;
-            border-radius: 6px;
-            overflow-x: auto;
-        }
+Spring Boot
 
-        code {
-            background: #e5e7eb;
-            padding: 2px 6px;
-            border-radius: 4px;
-        }
-
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            margin: 15px 0;
-        }
-
-        th, td {
-            border: 1px solid #d1d5db;
-            padding: 10px;
-            text-align: left;
-        }
-
-        th {
-            background: #f9fafb;
-        }
-
-        .highlight {
-            background: #f8fafc;
-            padding: 15px;
-            border-left: 5px solid #1d4ed8;
-            margin: 20px 0;
-        }
-    </style>
-</head>
-
-<body>
-
-<h1>🛒 ShopCardd – Hyperlocal Flash Sale Engine</h1>
-
-<p>
-<strong>Author:</strong> Bhavesh Patil<br>
-<strong>GitHub:</strong>
-<a href="https://github.com/patilcodesx">https://github.com/patilcodesx</a>
-</p>
-
-<hr>
-
-<h2>📖 Project Overview</h2>
-
-<p>
-ShopCardd Flash Sale Engine is a backend service developed as part of the
-<strong>ShopCardd Backend Engineering Assignment</strong>.
-</p>
-
-<p>
-The system enables merchants to publish limited-time deals with restricted inventory
-and allows users to discover and claim vouchers safely under
-<strong>high-concurrency traffic</strong>.
-</p>
-
-<p>
-The core objective of this project is to ensure:
-</p>
-
-<ul>
-    <li>Inventory is never oversold</li>
-    <li>Each user can claim a deal only once</li>
-    <li>Concurrent requests are handled safely</li>
-    <li>The system remains horizontally scalable</li>
-</ul>
-
-<hr>
-
-<h2>🎯 Problem Statement</h2>
-
-<p>
-During flash sales, hundreds or thousands of users may attempt to claim the same deal
-simultaneously.
-</p>
-
-<p>
-Without proper concurrency control, this can lead to:
-</p>
-
-<ul>
-    <li>Negative inventory</li>
-    <li>Duplicate voucher claims</li>
-    <li>Race conditions</li>
-    <li>Inconsistent database state</li>
-</ul>
-
-<div class="highlight">
-<strong>Goal:</strong>
-Guarantee correctness first — even under extreme parallel traffic.
-</div>
-
-<hr>
-
-<h2>🛠️ Technology Stack</h2>
-
-<table>
-<tr><th>Layer</th><th>Technology</th></tr>
-<tr><td>Programming Language</td><td>Java 17</td></tr>
-<tr><td>Framework</td><td>Spring Boot</td></tr>
-<tr><td>Database</td><td>PostgreSQL</td></tr>
-<tr><td>Distributed Cache</td><td>Redis</td></tr>
-<tr><td>Containerization</td><td>Docker</td></tr>
-<tr><td>Orchestration</td><td>Docker Compose</td></tr>
-</table>
-
-<hr>
-
-<h2>🧩 High-Level Architecture</h2>
-
-<pre>
-Client
-   ↓
-Load Balancer
-   ↓
-Spring Boot REST API
-   ↓
-Redis (Distributed Lock + Cache)
-   ↓
 PostgreSQL
-</pre>
 
-<hr>
+Redis
 
-<h2>🏗 Architecture Components</h2>
+Docker & Docker Compose
 
-<ul>
-    <li><strong>Spring Boot API</strong> – Stateless application layer</li>
-    <li><strong>PostgreSQL</strong> – Source of truth with ACID transactions</li>
-    <li><strong>Redis</strong> – Distributed locking and discovery caching</li>
-    <li><strong>Docker</strong> – Portable deployment environment</li>
-</ul>
+✨ Features
 
-<hr>
+Create time-bound flash deals
 
-<h2>▶️ How to Run the Application</h2>
+Geo-based deal discovery
 
-<h3>Prerequisites</h3>
+Redis-cached discovery results
 
-<ul>
-    <li>Docker</li>
-    <li>Docker Compose</li>
-</ul>
+Concurrency-safe voucher claiming
 
-<h3>Start the System</h3>
+Distributed locking using Redis
 
-<pre><code>docker compose up --build</code></pre>
+Prevention of overselling and duplicate claims
 
-<h3>Running Services</h3>
+🧩 Architecture
+Client
+  ↓
+Load Balancer
+  ↓
+Spring Boot API
+  ↓
+Redis (Distributed Lock + Cache)
+  ↓
+PostgreSQL
 
-<table>
-<tr><th>Service</th><th>Address</th></tr>
-<tr><td>Backend API</td><td>http://localhost:8080</td></tr>
-<tr><td>PostgreSQL</td><td>localhost:5432</td></tr>
-<tr><td>Redis</td><td>localhost:6379</td></tr>
-</table>
+▶️ How to Run the Application
+Prerequisites
 
-<hr>
+Docker
 
-<h2>🛠 REST API Endpoints</h2>
+Docker Compose
 
-<h3>1️⃣ Create Deal</h3>
+Start All Services
+docker compose up --build
 
-<pre><code>{
+
+Docker Compose automatically starts:
+
+Spring Boot application
+
+PostgreSQL database
+
+Redis server
+
+🌐 Running Services
+Service	Address
+API	http://localhost:8080
+
+PostgreSQL	localhost:5432
+Redis	localhost:6379
+🔴 Redis Setup & Verification
+
+Redis runs automatically inside Docker.
+
+Verify Redis Container
+docker ps
+
+
+Expected:
+
+flashsale-redis   redis:7-alpine   Up
+
+Connect to Redis CLI
+docker exec -it flashsale-redis redis-cli
+
+
+Test connection:
+
+PING
+
+
+Expected output:
+
+PONG
+
+Monitor Redis Locks & Cache
+MONITOR
+
+
+You will observe keys like:
+
+lock:deal:{dealId}
+cache:deals:{lat}:{lng}:{radius}
+
+🔗 API Endpoints
+1️⃣ Create Deal
+POST /deals
+
+{
   "merchant_id": "merchant-123",
   "title": "Flat 50% Off",
   "total_vouchers": 100,
@@ -199,134 +111,86 @@ PostgreSQL
     "lat": 19.0760,
     "long": 72.8777
   }
-}</code></pre>
+}
 
-<hr>
+2️⃣ Discover Deals
+GET /deals/discover?lat=19.0760&lng=72.8777&radius=5
 
-<h3>2️⃣ Discover Deals</h3>
+Behavior
 
-<pre><code>/deals/discover?lat=19.0760&lng=72.8777&radius=5</code></pre>
+Active deals only
 
-<ul>
-    <li>Returns only active deals</li>
-    <li>Filters expired and sold-out deals</li>
-    <li>Geo-distance calculated using Haversine formula</li>
-</ul>
+Geo-distance filtering (Haversine formula)
 
-<h4>Redis Discovery Cache</h4>
+Redis cache enabled (TTL = 30 seconds)
 
-<pre><code>cache:deals:{lat}:{lng}:{radius}</code></pre>
+Cache Key
 
-<p>Cache TTL: <strong>30 seconds</strong></p>
+cache:deals:{lat}:{lng}:{radius}
 
-<hr>
+3️⃣ Claim Deal
+POST /deals/{dealId}/claim?userId=u-1
 
-<h3>3️⃣ Claim Deal</h3>
+🔐 Concurrency Control
 
-<pre><code>/deals/{dealId}/claim?userId=u-1</code></pre>
+Voucher claiming uses Redis Distributed Locking.
 
-<table>
-<tr><th>Scenario</th><th>Result</th></tr>
-<tr><td>Successful claim</td><td>Voucher issued</td></tr>
-<tr><td>Already claimed</td><td>Rejected</td></tr>
-<tr><td>Sold out</td><td>Rejected</td></tr>
-<tr><td>Expired deal</td><td>Rejected</td></tr>
-</table>
+Lock Key
 
-<hr>
+lock:deal:{dealId}
 
-<h2>🔐 Concurrency Control Strategy</h2>
+Claim Flow
 
-<p>
-Voucher claiming is a critical section protected using
-<strong>Redis distributed locking</strong>.
-</p>
+Acquire Redis lock (SET NX EX)
 
-<pre><code>lock:deal:{dealId}</code></pre>
+Validate deal existence
 
-<h3>Claim Execution Flow</h3>
+Check expiration
 
-<ol>
-    <li>Acquire Redis lock using <code>SET NX EX</code></li>
-    <li>Validate deal existence</li>
-    <li>Check expiration timestamp</li>
-    <li>Check remaining inventory</li>
-    <li>Verify user has not claimed before</li>
-    <li>Decrement inventory</li>
-    <li>Persist claim transaction</li>
-    <li>Release lock safely</li>
-</ol>
+Check inventory
 
-<div class="highlight">
-✅ Inventory never drops below zero<br>
-✅ One voucher per user<br>
-✅ Safe under heavy concurrency
-</div>
+Prevent duplicate claims
 
-<hr>
+Decrement inventory
 
-<h2>🧠 Scenario 1 — Offline Voucher Verification</h2>
+Persist claim
 
-<p>
-To support merchants operating without internet connectivity:
-</p>
+Release lock safely
 
-<ul>
-    <li>Voucher token generated at claim time</li>
-    <li>Token signed using JWT or HMAC</li>
-    <li>Embedded into QR code</li>
-</ul>
+✅ Guarantees
 
-<p>
-Merchant applications can verify the voucher signature offline and sync logs
-once connectivity is restored.
-</p>
+Inventory never goes below zero
 
-<hr>
+One voucher per user
 
-<h2>🚀 Scenario 2 — Scaling to 1 Million Requests / Minute</h2>
+No overselling
 
-<ul>
-    <li>Stateless Spring Boot services</li>
-    <li>Horizontal scaling behind load balancer</li>
-    <li>Redis-first concurrency strategy</li>
-    <li>PostgreSQL read replicas</li>
-    <li>Indexed queries and connection pooling</li>
-</ul>
+Safe under high concurrency
 
-<hr>
+📊 Expected Outputs
+Scenario	HTTP Status	Sample Response
+Successful claim	200 OK	{ "status": "Success", "voucher_code": "SHOP-abc123" }
+Already claimed	400 Bad Request	{ "message": "User already claimed this deal" }
+Deal sold out	400 Bad Request	{ "message": "Deal sold out" }
+Deal expired	400 Bad Request	{ "message": "Deal expired" }
+Deal locked	400 Bad Request	{ "message": "Deal is currently being claimed" }
+⚠️ Failure Handling
+Failure	Behavior
+Redis unavailable	Claims rejected (fail-safe)
+Database error	Transaction rollback
+Duplicate claim	Gracefully rejected
+Invalid request	Proper HTTP response
+📦 Deployment Notes
 
-<h2>⚠️ Failure Handling</h2>
+Stateless Spring Boot services
 
-<table>
-<tr><th>Failure</th><th>Behavior</th></tr>
-<tr><td>Redis unavailable</td><td>Claims rejected (fail-safe)</td></tr>
-<tr><td>Database failure</td><td>Transaction rollback</td></tr>
-<tr><td>Duplicate claim</td><td>Graceful rejection</td></tr>
-<tr><td>Invalid request</td><td>Proper HTTP error</td></tr>
-</table>
+Horizontally scalable
 
-<hr>
+Redis handles high-contention operations
 
-<h2>✅ Summary</h2>
+PostgreSQL remains source of truth
 
-<ul>
-    <li>High-concurrency safe flash sale backend</li>
-    <li>Redis distributed locking</li>
-    <li>Geo-based deal discovery</li>
-    <li>Fully containerized deployment</li>
-    <li>Production-grade system design</li>
-</ul>
+👨‍💻 Author
 
-<hr>
-
-<h2>👨‍💻 Author</h2>
-
-<p>
-<strong>Bhavesh Patil</strong><br>
-GitHub:
-<a href="https://github.com/patilcodesx">https://github.com/patilcodesx</a>
-</p>
-
-</body>
-</html>
+Bhavesh Patil
+GitHub: https://github.com/patilcodesx
