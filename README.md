@@ -6,11 +6,13 @@ Backend service for managing **high-concurrency flash sales**, enabling merchant
 
 ## 🚀 Tech Stack
 
-- Java 17
-- Spring Boot
-- PostgreSQL
-- Redis
-- Docker & Docker Compose
+| Layer | Technology |
+|------|-----------|
+| Language | Java 17 |
+| Framework | Spring Boot |
+| Database | PostgreSQL |
+| Cache & Locking | Redis |
+| Containerization | Docker & Docker Compose |
 
 ---
 
@@ -25,7 +27,7 @@ Backend service for managing **high-concurrency flash sales**, enabling merchant
 
 ---
 
-## 🧩 Architecture
+## 🧩 System Architecture
 
 Client
 ↓
@@ -53,7 +55,6 @@ PostgreSQL
 
 ```bash
 docker compose up --build
-
 Docker Compose automatically starts:
 
 Spring Boot application
@@ -68,12 +69,15 @@ API	http://localhost:8080
 
 PostgreSQL	localhost:5432
 Redis	localhost:6379
+
 🔴 Redis Setup & Verification
 
 Redis runs automatically inside Docker.
 
 Verify Redis Container
 docker ps
+
+
 Expected output:
 
 flashsale-redis   redis:7-alpine   Up
@@ -87,7 +91,7 @@ Test connection:
 PING
 
 
-Expected output:
+Expected response:
 
 PONG
 
@@ -95,7 +99,7 @@ Monitor Redis Locks & Cache
 MONITOR
 
 
-You will observe keys like:
+Common keys observed:
 
 lock:deal:{dealId}
 cache:deals:{lat}:{lng}:{radius}
@@ -122,19 +126,18 @@ GET
 
 /deals/discover?lat=19.0760&lng=72.8777&radius=5
 
-
 Behavior
 
-Active deals only
+Returns active (non-expired) deals only
 
-Geo-distance filtering (Haversine formula)
+Geo-distance filtering using Haversine formula
 
-Redis cache enabled (TTL = 30 seconds)
+Redis caching enabled
 
-Cache Key
-
-cache:deals:{lat}:{lng}:{radius}
-
+Cache Details
+Item	Value
+Cache Key	cache:deals:{lat}:{lng}:{radius}
+TTL	30 seconds
 3️⃣ Claim Deal
 
 POST
@@ -146,62 +149,63 @@ POST
 Voucher claiming uses Redis Distributed Locking.
 
 Lock Key
-
 lock:deal:{dealId}
 
-Claim Flow
+Claim Execution Flow
 
 Acquire Redis lock (SET NX EX)
 
 Validate deal existence
 
-Check expiration
+Verify deal expiry
 
-Check inventory
+Check remaining inventory
 
-Prevent duplicate claims
+Ensure one voucher per user
 
-Decrement inventory
+Atomically decrement inventory
 
-Persist claim
+Persist claim transaction
 
-Release lock safely
+Release Redis lock
 
 ✅ Guarantees
 
-Inventory never goes below zero
+Inventory never drops below zero
 
-One voucher per user
+Exactly one voucher per user
 
 No overselling
 
-Safe under high concurrency
+Thread-safe under heavy concurrency
 
-📊 Expected Outputs
-Scenario	HTTP Status	Sample Response
+📊 API Response Scenarios
+Scenario	HTTP Status	Example Response
 Successful claim	200 OK	{ "status": "Success", "voucher_code": "SHOP-abc123" }
 Already claimed	400 Bad Request	{ "message": "User already claimed this deal" }
 Deal sold out	400 Bad Request	{ "message": "Deal sold out" }
 Deal expired	400 Bad Request	{ "message": "Deal expired" }
 Deal locked	400 Bad Request	{ "message": "Deal is currently being claimed" }
 ⚠️ Failure Handling
-Failure	Behavior
-Redis unavailable	Claims rejected (fail-safe)
-Database error	Transaction rollback
-Duplicate claim	Gracefully rejected
-Invalid request	Proper HTTP error response
+Failure Case	System Behavior
+Redis unavailable	Claim rejected (fail-safe)
+Database failure	Transaction rollback
+Duplicate request	Gracefully rejected
+Invalid input	Proper HTTP validation error
 📦 Deployment Notes
 
 Stateless Spring Boot services
 
-Horizontally scalable
+Horizontal scaling supported
 
 Redis handles high-contention operations
 
-PostgreSQL remains source of truth
+PostgreSQL remains system of record
 
 👨‍💻 Author
 
 Bhavesh Patil
+Backend Developer – Java & Spring Boot
 
-GitHub: https://github.com/patilcodesx
+🔗 GitHub: https://github.com/patilcodesx
+
