@@ -1,126 +1,146 @@
-# 🛒 ShopCardd – Hyperlocal Flash Sale Engine
+<?xml version="1.0" encoding="UTF-8"?>
+<readme>
 
-Backend service for managing **high-concurrency flash sales**, enabling merchants to create limited-inventory deals and users to safely discover and claim vouchers **without overselling**.
+  <title>🛒 ShopCardd – Hyperlocal Flash Sale Engine</title>
 
----
+  <description>
+    Backend service for managing high-concurrency flash sales, enabling merchants
+    to create limited-inventory deals and users to safely discover and claim
+    vouchers without overselling.
+  </description>
 
-## 🚀 Tech Stack
+  <techStack>
+    <technology layer="Language">Java 17</technology>
+    <technology layer="Framework">Spring Boot</technology>
+    <technology layer="Database">PostgreSQL</technology>
+    <technology layer="CacheAndLocking">Redis</technology>
+    <technology layer="Containerization">Docker &amp; Docker Compose</technology>
+  </techStack>
 
-| Layer | Technology |
-|------|-----------|
-| Language | Java 17 |
-| Framework | Spring Boot |
-| Database | PostgreSQL |
-| Cache & Locking | Redis |
-| Containerization | Docker & Docker Compose |
+  <features>
+    <feature>Create time-bound flash deals</feature>
+    <feature>Geo-based deal discovery</feature>
+    <feature>Redis-cached discovery results</feature>
+    <feature>Concurrency-safe voucher claiming</feature>
+    <feature>Distributed locking using Redis</feature>
+    <feature>Prevention of overselling and duplicate claims</feature>
+  </features>
 
----
+  <architecture>
+    <flow>Client</flow>
+    <flow>Load Balancer</flow>
+    <flow>Spring Boot API</flow>
+    <flow>Redis (Distributed Lock + Cache)</flow>
+    <flow>PostgreSQL</flow>
+  </architecture>
 
-## ✨ Features
+  <projectStructure>
+    <file>docker-compose.yml</file>
+    <file>Dockerfile</file>
+    <file>README.md</file>
+    <directory name="src">
+      <directory name="main">
+        <directory name="java">
+          <directory name="com.shopcardd.flashsale">
+            <directory name="controller"/>
+            <directory name="service"/>
+            <directory name="repository"/>
+            <directory name="entity"/>
+            <directory name="dto"/>
+            <directory name="config"/>
+          </directory>
+        </directory>
+        <directory name="resources">
+          <file>application.yml</file>
+          <file>schema.sql</file>
+        </directory>
+      </directory>
+    </directory>
+    <file>pom.xml</file>
+  </projectStructure>
 
-- Create time-bound flash deals
-- Geo-based deal discovery
-- Redis-cached discovery results
-- Concurrency-safe voucher claiming
-- Distributed locking using Redis
-- Prevention of overselling and duplicate claims
+  <run>
 
----
+    <prerequisites>
+      <tool>Docker</tool>
+      <tool>Docker Compose</tool>
+    </prerequisites>
 
-## 🧩 System Architecture
+    <command>docker compose up --build</command>
 
-Client
-↓
-Load Balancer
-↓
-Spring Boot API
-↓
-Redis (Distributed Lock + Cache)
-↓
-PostgreSQL
+  </run>
 
+  <services>
+    <service name="API">http://localhost:8080</service>
+    <service name="PostgreSQL">localhost:5432</service>
+    <service name="Redis">localhost:6379</service>
+  </services>
 
----
+  <redis>
+    <verify>docker ps</verify>
+    <cli>docker exec -it flashsale-redis redis-cli</cli>
+    <ping>PING</ping>
+    <expected>PONG</expected>
 
-## 📁 Project Folder Structure
+    <keys>
+      <key>lock:deal:{dealId}</key>
+      <key>cache:deals:{lat}:{lng}:{radius}</key>
+    </keys>
+  </redis>
 
-shopcardd-flash-sale-engine
-│
-├── docker-compose.yml
-├── Dockerfile
-├── README.md
-│
-├── src
-│ └── main
-│ ├── java
-│ │ └── com
-│ │ └── shopcardd
-│ │ └── flashsale
-│ │ ├── controller
-│ │ ├── service
-│ │ ├── repository
-│ │ ├── entity
-│ │ ├── dto
-│ │ └── config
-│ └── resources
-│ ├── application.yml
-│ └── schema.sql
-│
-└── pom.xml
+  <api>
 
+    <endpoint method="POST" path="/deals">
+      <request>
+        {
+          "merchant_id": "merchant-123",
+          "title": "Flat 50% Off",
+          "total_vouchers": 100,
+          "valid_until": "2026-12-31T23:59:59Z",
+          "location": {
+            "lat": 19.0760,
+            "long": 72.8777
+          }
+        }
+      </request>
+    </endpoint>
 
----
+    <endpoint method="GET" path="/deals/discover">
+      <description>
+        Geo-based deal discovery with Redis caching (TTL 30 seconds)
+      </description>
+    </endpoint>
 
-## ▶️ How to Run the Application
+    <endpoint method="POST" path="/deals/{dealId}/claim">
+      <description>Concurrency-safe voucher claim</description>
+    </endpoint>
 
-### Prerequisites
+  </api>
 
-- Docker
-- Docker Compose
+  <guarantees>
+    <guarantee>No overselling</guarantee>
+    <guarantee>One voucher per user</guarantee>
+    <guarantee>Inventory never below zero</guarantee>
+    <guarantee>Safe under heavy concurrency</guarantee>
+  </guarantees>
 
----
+  <failureHandling>
+    <failure type="Redis">Fail-safe rejection</failure>
+    <failure type="Database">Transaction rollback</failure>
+    <failure type="Duplicate">Graceful rejection</failure>
+    <failure type="InvalidRequest">Proper HTTP error</failure>
+  </failureHandling>
 
-### Start All Services
+  <deployment>
+    <note>Stateless Spring Boot services</note>
+    <note>Horizontally scalable</note>
+    <note>Redis handles contention</note>
+    <note>PostgreSQL is source of truth</note>
+  </deployment>
 
-```bash
-docker compose up --build
+  <author>
+    <name>Bhavesh Patil</name>
+    <github>https://github.com/patilcodesx</github>
+  </author>
 
-This will start:
-
-Spring Boot API
-
-PostgreSQL
-
-Redis
-
-🌐 Running Services
-Service	Address
-API	http://localhost:8080
-
-PostgreSQL	localhost:5432
-Redis	localhost:6379
-
-Redis Setup & Verification
-
-Verify Redis container:
-docker ps
-
-Expected output:
-flashsale-redis   redis:7-alpine   Up
-
-Connect to Redis CLI:
-docker exec -it flashsale-redis redis-cli
-
-Test connection:
-PING
-
-Expected:
-PONG
-
-Monitor Redis keys:
-MONITOR
-
-Common keys:
-lock:deal:{dealId}
-cache:deals:{lat}:{lng}:{radius}
-
+</readme>
