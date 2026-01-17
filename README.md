@@ -29,6 +29,7 @@ Backend service for managing high-concurrency flash sales, enabling merchants to
 
 ## 🧩 System Architecture
 
+```
 Client
   ↓
 Load Balancer
@@ -38,6 +39,8 @@ Spring Boot API
 Redis (Distributed Lock + Cache)
   ↓
 PostgreSQL
+```
+
 
 ---
 
@@ -52,7 +55,10 @@ PostgreSQL
 
 ### Start All Services
 
+```bash
 docker compose up --build
+```
+
 
 Docker Compose automatically starts:
 
@@ -78,7 +84,10 @@ Redis runs automatically inside Docker.
 
 Verify Redis container:
 
+```bash
 docker ps
+```
+
 
 Expected output:
 
@@ -88,11 +97,17 @@ flashsale-redis   redis:7-alpine   Up
 
 Connect to Redis CLI:
 
+```bash
 docker exec -it flashsale-redis redis-cli
+```
+
 
 Test connection:
 
+```bash
 PING
+```
+
 
 Expected response:
 
@@ -102,7 +117,10 @@ PONG
 
 Monitor Redis keys:
 
+```bash
 MONITOR
+```
+
 
 Common keys:
 
@@ -118,7 +136,7 @@ cache:deals:{lat}:{lng}:{radius}
 ### Create Deal
 
 POST /deals
-
+```json
 {
   "merchant_id": "merchant-123",
   "title": "Flat 50% Off",
@@ -129,7 +147,7 @@ POST /deals
     "long": 72.8777
   }
 }
-
+```
 ---
 
 ### Discover Deals
