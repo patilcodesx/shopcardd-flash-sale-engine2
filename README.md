@@ -220,7 +220,7 @@ Safe under heavy concurrency
 |----------|--------------|------------------|
 | Successful claim | 200 | `{ "status": "Success", "voucher_code": "SHOP-abc123" }` |
 | Already claimed | 400 | `{ "message": "User already claimed this deal" }` |
-| Deal sold out | 400 | `{ "message": "Deal sold out" }` |
+| Deal sold out | 409 | `{ "message": "Deal sold out" }` |
 | Deal expired | 400 | `{ "message": "Deal expired" }` |
 | Deal locked | 400 | `{ "message": "Deal is currently being claimed" }` |
 
