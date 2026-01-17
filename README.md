@@ -1,35 +1,117 @@
-# 🛒 ShopCardd – Hyperlocal Flash Sale Engine
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ShopCardd – Flash Sale Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-Backend service for managing high-concurrency flash sales, enabling merchants to create limited-inventory deals and users to safely discover and claim vouchers without overselling.
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial;
+            background-color: #0d1117;
+            color: #c9d1d9;
+            padding: 40px;
+            line-height: 1.6;
+        }
 
----
+        h1, h2, h3 {
+            color: #ffffff;
+            border-bottom: 1px solid #30363d;
+            padding-bottom: 6px;
+        }
 
-## 🚀 Tech Stack
+        a {
+            color: #58a6ff;
+            text-decoration: none;
+        }
 
-| Layer | Technology |
-|------|-----------|
-| Language | Java 17 |
-| Framework | Spring Boot |
-| Database | PostgreSQL |
-| Cache & Locking | Redis |
-| Containerization | Docker & Docker Compose |
+        table {
+            border-collapse: collapse;
+            margin: 20px 0;
+            width: 100%;
+        }
 
----
+        th, td {
+            border: 1px solid #30363d;
+            padding: 10px;
+            text-align: left;
+        }
 
-## ✨ Features
+        th {
+            background: #161b22;
+        }
 
-- Create time-bound flash deals
-- Geo-based deal discovery
-- Redis-cached discovery results
-- Concurrency-safe voucher claiming
-- Distributed locking using Redis
-- Prevention of overselling and duplicate claims
+        pre {
+            background: #161b22;
+            padding: 15px;
+            overflow-x: auto;
+            border-radius: 6px;
+            border: 1px solid #30363d;
+        }
 
----
+        code {
+            color: #79c0ff;
+        }
 
-## 🧩 System Architecture
+        ul {
+            margin-left: 20px;
+        }
 
-```
+        .section {
+            margin-top: 40px;
+        }
+
+        footer {
+            margin-top: 60px;
+            border-top: 1px solid #30363d;
+            padding-top: 20px;
+            color: #8b949e;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🛒 ShopCardd – Hyperlocal Flash Sale Engine</h1>
+
+<p>
+Backend service for managing <strong>high-concurrency flash sales</strong>,
+enabling merchants to create limited-inventory deals and users to safely
+discover and claim vouchers without overselling.
+</p>
+
+<hr>
+
+<div class="section">
+<h2>🚀 Tech Stack</h2>
+
+<table>
+<tr><th>Layer</th><th>Technology</th></tr>
+<tr><td>Language</td><td>Java 17</td></tr>
+<tr><td>Framework</td><td>Spring Boot</td></tr>
+<tr><td>Database</td><td>PostgreSQL</td></tr>
+<tr><td>Cache & Locking</td><td>Redis</td></tr>
+<tr><td>Containerization</td><td>Docker & Docker Compose</td></tr>
+</table>
+</div>
+
+<div class="section">
+<h2>✨ Features</h2>
+
+<ul>
+    <li>Create time-bound flash deals</li>
+    <li>Geo-based deal discovery</li>
+    <li>Redis-cached discovery results</li>
+    <li>Concurrency-safe voucher claiming</li>
+    <li>Distributed locking using Redis</li>
+    <li>Prevention of overselling and duplicate claims</li>
+</ul>
+</div>
+
+<div class="section">
+<h2>🧩 System Architecture</h2>
+
+<pre>
 Client
   ↓
 Load Balancer
@@ -39,13 +121,13 @@ Spring Boot API
 Redis (Distributed Lock + Cache)
   ↓
 PostgreSQL
-```
+</pre>
+</div>
 
+<div class="section">
+<h2>📁 Project Folder Structure</h2>
 
----
-
-## 📁 Project Folder Structure
-
+<pre>
 shopcardd-flash-sale-engine
 │
 ├── docker-compose.yml
@@ -55,136 +137,55 @@ shopcardd-flash-sale-engine
 ├── src
 │   └── main
 │       ├── java
-│       │   └── com
-│       │       └── shopcardd
-│       │           └── flashsale
-│       │               ├── controller
-│       │               │   └── DealController.java
-│       │               │
-│       │               ├── service
-│       │               │   ├── DealService.java
-│       │               │   ├── ClaimService.java
-│       │               │
-│       │               ├── repository
-│       │               │   ├── DealRepository.java
-│       │               │   ├── ClaimRepository.java
-│       │               │
-│       │               ├── entity
-│       │               │   ├── Deal.java
-│       │               │   ├── Claim.java
-│       │               │
-│       │               ├── dto
-│       │               │   ├── DealRequest.java
-│       │               │   ├── DealResponse.java
-│       │               │
-│       │               ├── config
-│       │               │   ├── RedisConfig.java
-│       │               │   └── CacheConfig.java
-│       │               │
-│       │               └── FlashSaleApplication.java
-│       │
+│       │   └── com/shopcardd/flashsale
+│       │       ├── controller
+│       │       ├── service
+│       │       ├── repository
+│       │       ├── entity
+│       │       ├── dto
+│       │       └── config
 │       └── resources
 │           ├── application.yml
 │           └── schema.sql
 │
 └── pom.xml
+</pre>
+</div>
 
+<div class="section">
+<h2>▶️ Run Application</h2>
 
+<pre><code>docker compose up --build</code></pre>
 
-## ▶️ How to Run the Application
+<p>Starts:</p>
+<ul>
+    <li>Spring Boot API</li>
+    <li>PostgreSQL</li>
+    <li>Redis</li>
+</ul>
+</div>
 
-### Prerequisites
+<div class="section">
+<h2>🌐 Services</h2>
 
-- Docker
-- Docker Compose
+<table>
+<tr><th>Service</th><th>Address</th></tr>
+<tr><td>API</td><td>http://localhost:8080</td></tr>
+<tr><td>PostgreSQL</td><td>localhost:5432</td></tr>
+<tr><td>Redis</td><td>localhost:6379</td></tr>
+</table>
+</div>
 
----
+<div class="section">
+<h2>🔗 API Endpoints</h2>
 
-### Start All Services
+<h3>Create Deal</h3>
 
-```bash
-docker compose up --build
-```
-
-
-Docker Compose automatically starts:
-
-- Spring Boot application
-- PostgreSQL database
-- Redis server
-
----
-
-## 🌐 Running Services
-
-| Service | Address |
-|--------|---------|
-| API | http://localhost:8080 |
-| PostgreSQL | localhost:5432 |
-| Redis | localhost:6379 |
-
----
-
-## 🔴 Redis Setup & Verification
-
-Redis runs automatically inside Docker.
-
-Verify Redis container:
-
-```bash
-docker ps
-```
-
-
-Expected output:
-
-flashsale-redis   redis:7-alpine   Up
-
----
-
-Connect to Redis CLI:
-
-```bash
-docker exec -it flashsale-redis redis-cli
-```
-
-
-Test connection:
-
-```bash
-PING
-```
-
-
-Expected response:
-
-PONG
-
----
-
-Monitor Redis keys:
-
-```bash
-MONITOR
-```
-
-
-Common keys:
-
-lock:deal:{dealId}
-cache:deals:{lat}:{lng}:{radius}
-
----
-
-## 🔗 API Endpoints
-
----
-
-### Create Deal
-
+<pre>
 POST /deals
+</pre>
 
-```json
+<pre>
 {
   "merchant_id": "merchant-123",
   "title": "Flat 50% Off",
@@ -195,99 +196,53 @@ POST /deals
     "long": 72.8777
   }
 }
-```
----
+</pre>
 
-### Discover Deals
+<h3>Discover Deals</h3>
 
+<pre>
 GET /deals/discover?lat=19.0760&lng=72.8777&radius=5
+</pre>
 
-Behavior:
+<h3>Claim Deal</h3>
 
-- Active deals only
-- Geo-distance filtering using Haversine formula
-- Redis caching enabled
-
-Cache details:
-
-cache:deals:{lat}:{lng}:{radius}
-TTL: 30 seconds
-
----
-
-### Claim Deal
-
+<pre>
 POST /deals/{dealId}/claim?userId=u-1
+</pre>
 
----
+</div>
 
-## 🔐 Concurrency Control
+<div class="section">
+<h2>🔐 Concurrency Control</h2>
 
-Redis distributed locking is used.
-
-Lock key:
-
+<pre>
 lock:deal:{dealId}
+</pre>
 
-Claim flow:
+<ul>
+    <li>Redis SET NX EX locking</li>
+    <li>Atomic inventory decrement</li>
+    <li>No overselling guarantee</li>
+</ul>
+</div>
 
-1. Acquire Redis lock (SET NX EX)
-2. Validate deal existence
-3. Check expiration
-4. Check inventory
-5. Prevent duplicate claims
-6. Decrement inventory
-7. Persist claim
-8. Release lock
+<div class="section">
+<h2>📊 API Responses</h2>
 
----
+<table>
+<tr><th>Scenario</th><th>Status</th><th>Response</th></tr>
+<tr><td>Success</td><td>200</td><td>{"status":"Success"}</td></tr>
+<tr><td>Already claimed</td><td>400</td><td>User already claimed</td></tr>
+<tr><td>Sold out</td><td>400</td><td>Deal sold out</td></tr>
+<tr><td>Expired</td><td>400</td><td>Deal expired</td></tr>
+</table>
+</div>
 
-## ✅ Guarantees
+<footer>
+    <p><strong>Author:</strong> Bhavesh Patil</p>
+    <p>GitHub: <a href="https://github.com/patilcodesx">https://github.com/patilcodesx</a></p>
+    <p>Built for ShopCardd Backend Engineering Assessment.</p>
+</footer>
 
-- Inventory never goes below zero
-- One voucher per user
-- No overselling
-- Safe under heavy concurrency
-
----
-
-## 📊 API Responses
-
-| Scenario | HTTP Status | Sample Response |
-|--------|-------------|----------------|
-| Successful claim | 200 | { "status": "Success", "voucher_code": "SHOP-abc123" } |
-| Already claimed | 400 | { "message": "User already claimed this deal" } |
-| Deal sold out | 400 | { "message": "Deal sold out" } |
-| Deal expired | 400 | { "message": "Deal expired" } |
-| Deal locked | 400 | { "message": "Deal is currently being claimed" } |
-
----
-
-## ⚠️ Failure Handling
-
-| Failure | Behavior |
-|------|------|
-| Redis unavailable | Claims rejected (fail-safe) |
-| Database error | Transaction rollback |
-| Duplicate claim | Gracefully rejected |
-| Invalid request | Proper HTTP error |
-
----
-
-## 📦 Deployment Notes
-
-- Stateless Spring Boot services
-- Horizontally scalable
-- Redis handles high-contention operations
-- PostgreSQL remains source of truth
-
----
-
-## 👨‍💻 Author
-
-Bhavesh Patil  
-GitHub: https://github.com/patilcodesx
-
----
-
-Built for the ShopCardd Backend Engineering Assessment.
+</body>
+</html>
