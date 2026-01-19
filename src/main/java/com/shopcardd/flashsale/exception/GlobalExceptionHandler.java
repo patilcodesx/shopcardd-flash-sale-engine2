@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.shopcardd.flashsale.dto.ApiResponse;
+
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -14,7 +16,7 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, String>> handle(RuntimeException ex) {
+    public ResponseEntity<ApiResponse> handle(RuntimeException ex) {
 
         HttpStatus status =
                 ex.getClass().isAnnotationPresent(ResponseStatus.class)
@@ -22,7 +24,7 @@ public class GlobalExceptionHandler {
                         : HttpStatus.BAD_REQUEST;
 
         return new ResponseEntity<>(
-                Map.of("message", ex.getMessage()),
+               new ApiResponse("fail",ex.getMessage()),
                 status
         );
     }

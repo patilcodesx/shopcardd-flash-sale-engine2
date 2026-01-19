@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,19 +32,30 @@ public class DealService {
 
     public DealResponse createDeal(CreateDealRequest request) {
 
-        Deal deal = Deal.builder()
-                .merchantId(request.getMerchantId())
-                .title(request.getTitle())
-                .totalInventory(request.getTotalVouchers())
+    Deal deal = Deal.builder()
+            .merchantId(request.getMerchantId())
+            .title(request.getTitle())
+            .totalInventory(request.getTotalVouchers())
+            .inventoryRemaining(request.getTotalVouchers())
+            .validUntil(request.getValidUntil())
+            .latitude(request.getLocation().getLat())
+            .longitude(request.getLocation().getLng())
+            .build();
 
-                .inventoryRemaining(request.getTotalVouchers())
-                .validUntil(request.getValidUntil())
-                .latitude(request.getLocation().getLat())
-                .longitude(request.getLocation().getLng())
-                .build();
+    // 1️⃣ Save first to generate UUID
+    Deal savedDeal = dealRepository.save(deal);
 
-        return toResponse(dealRepository.save(deal));
-    }
+    // 2️⃣ Store inventory in Redis
+   redisTemplate.opsForValue().set(
+    "deal:inventory:" + savedDeal.getDealId(),
+    String.valueOf(savedDeal.getTotalInventory()),
+    Duration.between(Instant.now(), savedDeal.getValidUntil())
+);
+
+
+    return toResponse(savedDeal);
+}
+
 
     private DealResponse toResponse(Deal deal) {
         return DealResponse.builder()
@@ -64,53 +76,78 @@ public class DealService {
 
     /* -------------------- CLAIM DEAL (CORE CHALLENGE) -------------------- */
 
-    @Transactional
-    public void claimDeal(String dealId, String userId) {
+  @Transactional
+public void claimDeal(String dealId, String userId) {
 
-        String lockKey = "lock:deal:" + dealId;
+    String lockKey = "lock:deal:" + dealId;
 
-        Boolean lockAcquired = redisTemplate
-                .opsForValue()
-                .setIfAbsent(lockKey, userId, Duration.ofSeconds(10));
+    Boolean lockAcquired = redisTemplate
+            .opsForValue()
+            .setIfAbsent(lockKey, userId, Duration.ofSeconds(10));
 
-        if (Boolean.FALSE.equals(lockAcquired)) {
-            throw new DealLockedException("Deal is currently being claimed. Try again.");
-        }
-
-        try {
-            Deal deal = dealRepository.findById(dealId)
-                    .orElseThrow(() -> new DealNotFoundException("Deal not found"));
-
-            if (deal.getValidUntil().isBefore(Instant.now())) {
-                throw new DealExpiredException("Deal expired");
-            }
-
-            if (deal.getInventoryRemaining() <= 0) {
-                throw new DealSoldOutException("Deal sold out");
-            }
-
-            if (claimRepository.findByDealIdAndUserId(dealId, userId).isPresent()) {
-                throw new AlreadyClaimedException("User already claimed this deal");
-            }
-
-            deal.setInventoryRemaining(deal.getInventoryRemaining() - 1);
-            dealRepository.save(deal);
-
-            claimRepository.save(
-                    Claim.builder()
-                            .dealId(dealId)
-                            .userId(userId)
-                            .claimedAt(Instant.now())
-                            .build()
-            );
-
-        } finally {
-            String owner = redisTemplate.opsForValue().get(lockKey);
-            if (userId.equals(owner)) {
-                redisTemplate.delete(lockKey);
-            }
-        }
+    if (Boolean.FALSE.equals(lockAcquired)) {
+        throw new DealLockedException("Deal is currently being claimed. Try again.");
     }
+
+    try {
+
+        String inventoryKey = "deal:inventory:" + dealId;
+        String userSetKey = "deal:users:" + dealId;
+
+        // duplicate check
+        if (Boolean.TRUE.equals(
+                redisTemplate.opsForSet().isMember(userSetKey, userId))) {
+            throw new AlreadyClaimedException("User already claimed");
+        }
+
+        // atomic inventory
+        Long remaining = redisTemplate.opsForValue().decrement(inventoryKey);
+
+        if (remaining == null || remaining < 0) {
+            redisTemplate.opsForValue().increment(inventoryKey);
+            throw new DealSoldOutException("Deal Sold Out");
+        }
+
+        Deal deal = dealRepository.findById(dealId)
+                .orElseThrow(() -> new DealNotFoundException("Deal not found"));
+
+        if (deal.getValidUntil().isBefore(Instant.now())) {
+            redisTemplate.opsForValue().increment(inventoryKey);
+            throw new DealExpiredException("Deal expired");
+        }
+
+        redisTemplate.opsForSet().add(userSetKey, userId);
+
+        // expire user set
+        redisTemplate.expire(
+                userSetKey,
+                Duration.between(Instant.now(), deal.getValidUntil())
+        );
+
+        claimRepository.save(
+                Claim.builder()
+                        .dealId(dealId)
+                        .userId(userId)
+                        .claimedAt(Instant.now())
+                        .build()
+        );
+
+        deal.setInventoryRemaining(remaining.intValue());
+        dealRepository.save(deal);
+
+    } finally {
+
+        redisTemplate.execute(
+                new DefaultRedisScript<>(
+                        "if redis.call('get', KEYS[1]) == ARGV[1] then " +
+                        "return redis.call('del', KEYS[1]) else return 0 end",
+                        Long.class
+                ),
+                List.of(lockKey),
+                userId
+        );
+    }
+}
 
     /* -------------------- DISCOVER DEALS (WITH REDIS CACHE) -------------------- */
 

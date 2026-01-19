@@ -60,7 +60,7 @@ public Map<String, String> claimDeal(
     dealService.claimDeal(dealId, finalUserId);
 
    return Map.of(
-        "status", "Success",
+        "status", "success",
         "voucher_code", "SHOP-" + dealId.substring(0, 6)
     );
 }
