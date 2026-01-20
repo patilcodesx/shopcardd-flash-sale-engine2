@@ -249,7 +249,7 @@ SELECT deal_id, inventory_remaining FROM deals;
 ```
 ## Check claims table
 ```sql
-Copy code
+
 SELECT * FROM claims;
 ```
 ## ⚡ High-Concurrency Test (Optional)
