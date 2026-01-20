@@ -253,7 +253,8 @@ Safe under heavy concurrency
 
 All step-by-step testing commands are available in:
 
-TESTING.md
+👉 **[TESTING.md](TESTING.md)**
+
 
 
 ### Includes
