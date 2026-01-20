@@ -35,7 +35,7 @@ docker compose up --build
 docker ps
 ```
 
-## Expected containers
+### Expected containers
 ```bash
 flashsale-app
 flashsale-postgres
@@ -163,7 +163,7 @@ curl -X POST \
 ## ❌ 5️⃣ Sold Out Test
 Claim using different users until inventory becomes zero:
 
-```sql
+```text
 
 user-2
 user-3
@@ -173,7 +173,6 @@ user-5
 Then try again:
 
 ```bash
-
 curl -X POST \
   "http://localhost:8080/deals/{dealId}/claim?userId=user-6"
   ```
@@ -186,7 +185,7 @@ curl -X POST \
 }
 ```
 ## HTTP Status
-```pgsql
+```text
 
 409 Conflict
 ```
@@ -199,13 +198,11 @@ Create a deal with a past timestamp:
 ```
 ### Claim Request
 ```bash
-
 curl -X POST \
   "http://localhost:8080/deals/{dealId}/claim?userId=user-x"
   ```
 ### Expected Response
 ```json
-
 {
   "status": "fail",
   "reason": "Deal expired"
@@ -271,7 +268,7 @@ Remaining users receive:
 
 409 Conflict
 ```
-✅ Validation Checklist
+## ✅ Validation Checklist
 - Redis atomic decrement works
 - No overselling
 - One voucher per user
